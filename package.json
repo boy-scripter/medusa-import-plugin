@@ -1,6 +1,6 @@
 {
   "name": "@xross-dev/medusa-product-import",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Resilient CSV product import for Medusa v2: Admin UI, DB checkpoints, workflow retries, Continue Job",
   "license": "MIT",
   "files": [
