@@ -23,6 +23,8 @@ module.exports = defineConfig({
         price_list_id: process.env.IMPORT_PRICE_LIST_ID,        // dealer prices
         sales_channel_id: process.env.IMPORT_SALES_CHANNEL_ID,
         shipping_profile_id: process.env.IMPORT_SHIPPING_PROFILE_ID,
+        batch_size: Number(process.env.IMPORT_BATCH_SIZE) || 10,  // products per batch (default: 10)
+        image_path_prefix: process.env.IMPORT_IMAGE_PATH_PREFIX || "imports",  // path prefix for uploaded images (default: "imports")
       },
     },
   ],
@@ -37,6 +39,8 @@ Then `npx medusa db:migrate`. Requirements: a configured **File module provider*
 | `price_list_id` | Price list receiving `dealer_price` entries. |
 | `sales_channel_id` | Attached to created products; its stock location receives inventory. |
 | `shipping_profile_id` | Attached to created products. |
+| `batch_size` | Number of products processed per batch (default: 10, max: 100). |
+| `image_path_prefix` | Path prefix for uploaded image files (default: "imports"). |
 
 Options and the existence of all three IDs are validated before every preprocess/start; nothing is hardcoded and no config or file URLs are returned by the API.
 

@@ -2,7 +2,7 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { IMPORT_MODULE, BATCH_SIZE } from "../../modules/import/constants"
+import { IMPORT_MODULE } from "../../modules/import/constants"
 import type ImportModuleService from "../../modules/import/service"
 import { preprocessCsv } from "../../modules/import/utils/preprocess"
 import { FileStore } from "../../lib/file-store"
@@ -45,8 +45,8 @@ export const preprocessCsvStep = createStep(
           )
           parts.push({ file_id: stored.id, count: products.length })
           const rows: any[] = []
-          for (let off = 0; off < products.length; off += BATCH_SIZE) {
-            const slice = products.slice(off, off + BATCH_SIZE)
+          for (let off = 0; off < products.length; off += opts.batch_size) {
+            const slice = products.slice(off, off + opts.batch_size)
             rows.push({ job_id: job.id, idx: batchIdx++, part_file_id: stored.id, start_line: off, size: slice.length, product_keys: slice.map((p) => p.key) })
           }
           await svc.createImportBatches(rows)

@@ -5,7 +5,7 @@ import { ImportError } from "./models/import-error"
 import { ImportProductMap } from "./models/import-product-map"
 import { ImportImageMap } from "./models/import-image-map"
 import { validateOptions } from "./utils/options"
-import type { ImportModuleOptions } from "./types"
+import type { ImportModuleOptions, ImportModuleInputOptions } from "./types"
 
 type ErrorRow = {
   job_id: string
@@ -18,9 +18,9 @@ type ErrorRow = {
 }
 
 class ImportModuleService extends MedusaService({ ImportJob, ImportBatch, ImportError, ImportProductMap, ImportImageMap }) {
-  protected readonly options_: Partial<ImportModuleOptions>
+  protected readonly options_: Partial<ImportModuleInputOptions>
 
-  constructor(container: Record<string, unknown>, options: Partial<ImportModuleOptions>) {
+  constructor(container: Record<string, unknown>, options: Partial<ImportModuleInputOptions>) {
     // @ts-ignore - MedusaService forwards all constructor args
     super(...arguments)
     this.options_ = options ?? {}

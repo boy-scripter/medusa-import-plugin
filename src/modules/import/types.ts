@@ -3,6 +3,17 @@ export type ImportModuleOptions = {
   price_list_id: string
   sales_channel_id: string
   shipping_profile_id: string
+  batch_size: number
+  image_path_prefix: string
+}
+
+export type ImportModuleInputOptions = {
+  prefix_upload: string
+  price_list_id: string
+  sales_channel_id: string
+  shipping_profile_id: string
+  batch_size?: number
+  image_path_prefix?: string
 }
 export type ProductStatus = "draft" | "proposed" | "published" | "rejected"
 export type NormalizedVariant = {

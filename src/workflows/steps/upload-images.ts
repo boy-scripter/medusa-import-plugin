@@ -4,6 +4,7 @@ import { uploadFilesWorkflow } from "@medusajs/medusa/core-flows";
 import { IMPORT_MODULE } from "../../modules/import/constants";
 import type ImportModuleService from "../../modules/import/service";
 import type { NormalizedProduct } from "../../modules/import/types";
+import type { ImportModuleOptions } from "../../modules/import/types";
 
 const MAX_BYTES = 15 * 1024 * 1024;
 // "v2|" salt: image-map rows from earlier releases (possibly corrupt uploads) are ignored and re-uploaded
@@ -66,6 +67,7 @@ export const uploadImagesStep = createStep(
     { container },
   ) => {
     const svc: ImportModuleService = container.resolve(IMPORT_MODULE);
+    const opts: ImportModuleOptions = svc.getOptions();
     const urls = [...new Set(input.products.flatMap((p) => p.images))];
     const images: Record<string, string> = {};
     const failed: Record<string, string> = {};
@@ -91,7 +93,7 @@ export const uploadImagesStep = createStep(
           input: {
             files: [
               {
-                filename: `${hash(url).slice(0, 12)}-${base}`,
+                filename: `${opts.image_path_prefix}/${hash(url).slice(0, 12)}-${base}`,
                 mimeType: type,
                 content: buf.toString("base64"),
                 access: "public",
