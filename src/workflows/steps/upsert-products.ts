@@ -235,7 +235,7 @@ class Upserter {
         v.price != null
           ? [{ amount: v.price, currency_code: this.currency }]
           : [],
-      metadata: { attributes: v.attributes, import_source: this.source },
+      metadata: { import_source: this.source },
     };
   }
 
@@ -260,6 +260,7 @@ class Upserter {
       );
     const metadata = {
       attributes: p.attributes,
+
     };
     const common = {
       title: p.title,
@@ -343,7 +344,11 @@ class Upserter {
                 }
               : {}),
             options: mergedOptions,
-            metadata: { ...(existing.metadata ?? {}), ...metadata },
+            metadata: {
+              ...(existing.metadata ?? {}),
+              ...metadata,
+              attributes: metadata.attributes,
+            },
           } as any,
         },
       });

@@ -138,12 +138,12 @@ export function buildProduct(key: string, rows: RawRow[]): { product: Normalized
   }
   if (!variants.length) { err(null, "no valid variants"); return { product: null, issues } }
 
-  // attributes identical on every variant become product attributes
-  const attributes: Record<string, string> = {}
-  for (const [name, val] of Object.entries(variants[0].attributes)) {
-    if (variants.every((v) => v.attributes[name] === val)) attributes[name] = val
+  // Use all attributes from first variant as product attributes
+  const attributes: Record<string, string> = { ...variants[0].attributes }
+  // Clear all variant attributes
+  for (const v of variants) {
+    v.attributes = {}
   }
-  for (const v of variants) for (const name of Object.keys(attributes)) delete v.attributes[name]
 
   const rawStatus = first("status")
   const status = normalizeStatus(rawStatus)

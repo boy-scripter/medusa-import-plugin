@@ -47,7 +47,7 @@ Required headers: `title`, `variant_sku`. All 39 documented columns are supporte
 **Grouping strategy:** product key = normalized `title` + `|` + normalized `brand_tag`. A row with a blank `title` belongs to the previous row's product. Product-level fields take the first non-empty value; images are merged across rows.
 **Sorting:** rows are hash-bucketed to disk, grouped per bucket and ordered by product key, so output is deterministic and memory is bounded.
 **Validation:** a row is rejected (error) for: missing SKU, duplicate SKU in product, missing option value, duplicate option combination, invalid price. Warnings: missing price, bad dealer price/quantity/image URL, unknown status (-> `draft`). With no option columns a single synthetic option `Variant` (value = SKU) is created.
-**Attributes:** values identical on every variant become product attributes; the rest stay on the variant. Stored in `metadata.attributes`. `brand_tag` becomes a product tag; `category` accepts `Parent > Child`; collections/categories/tags are created if missing.
+**Attributes:** all attributes from the first variant are used as product attributes. All variant attributes are cleared (set to empty object). Stored in `metadata.attributes`. `brand_tag` becomes a product tag; `category` accepts `Parent > Child`; collections/categories/tags are created if missing.
 
 Normalized output is NDJSON in parts of 500 products stored through the File module; each batch addresses 10 products inside a part.
 

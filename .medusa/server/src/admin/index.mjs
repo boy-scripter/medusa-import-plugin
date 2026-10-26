@@ -97,7 +97,13 @@ function ImportDetail() {
   const qc = useQueryClient();
   const [showPreview, setShowPreview] = useState(false);
   const [freshMode, setFreshMode] = useState(false);
-  const [fresh, setFresh] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deletion, setDeletion] = useState({
+    count: 0,
+    sample: [],
+    token: ""
+  });
+  const [previewLoading, setPreviewLoading] = useState(false);
   const freshToken = useRef(null);
   const { data } = useQuery({
     queryKey: ["import", id],
@@ -138,18 +144,14 @@ function ImportDetail() {
     onSuccess: () => {
       toast.success("Fresh import started");
       freshToken.current = null;
-      setFresh(null);
+      setDialogOpen(false);
       qc.invalidateQueries({ queryKey: ["import", id] });
     },
     onError: (e) => {
       if (e.status === 409 && e.body?.deletion_preview) {
         freshToken.current = e.body.deletion_preview.token;
-        setFresh({
-          sample: [],
-          warning_count: 0,
-          error_count: 0,
-          deletion_preview: e.body.deletion_preview
-        });
+        setDeletion(e.body.deletion_preview);
+        setDialogOpen(true);
         toast.warning(
           "The set of products to delete changed. Please review again."
         );
@@ -157,18 +159,22 @@ function ImportDetail() {
     }
   });
   const openFresh = async () => {
+    setPreviewLoading(true);
     try {
       const pv = await api(`/${id}/preview?mode=fresh`);
-      const dp = pv.deletion_preview;
+      const dp = pv?.deletion_preview;
       if (!dp) throw new Error("Server returned no deletion preview");
+      freshToken.current = dp.token;
       if (dp.count === 0)
         startFresh.mutate(dp.token);
       else {
-        freshToken.current = dp.token;
-        setFresh(pv);
+        setDeletion(dp);
+        setDialogOpen(true);
       }
     } catch (e) {
       toast.error(`Deletion preview failed: ${e.message}`);
+    } finally {
+      setPreviewLoading(false);
     }
   };
   if (!data)
@@ -218,7 +224,8 @@ function ImportDetail() {
               Button,
               {
                 variant: freshMode ? "danger" : "primary",
-                isLoading: startMerge.isPending,
+                isLoading: startMerge.isPending || previewLoading || startFresh.isPending,
+                disabled: previewLoading,
                 onClick: () => freshMode ? openFresh() : startMerge.mutate(),
                 children: freshMode ? "Review deletion & import" : "Start import (create or update)"
               }
@@ -355,17 +362,16 @@ function ImportDetail() {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsx(Prompt, { open: !!fresh, onOpenChange: (o) => !o && setFresh(null), children: /* @__PURE__ */ jsxs(Prompt.Content, { children: [
+    /* @__PURE__ */ jsx(Prompt, { open: dialogOpen, onOpenChange: setDialogOpen, children: /* @__PURE__ */ jsxs(Prompt.Content, { children: [
       /* @__PURE__ */ jsxs(Prompt.Header, { children: [
         /* @__PURE__ */ jsx(Prompt.Title, { children: "Delete previously imported products?" }),
         /* @__PURE__ */ jsxs(Prompt.Description, { children: [
-          "A fresh import first deletes the",
-          " ",
-          fresh?.deletion_preview?.count ?? 0,
+          "A fresh import first deletes the ",
+          deletion.count,
           " product(s) created by this import source, and nothing else. Products:",
           " ",
-          fresh?.deletion_preview?.sample.map((p) => p.title).join(", ") || "none",
-          (fresh?.deletion_preview?.count ?? 0) > 25 ? ", …" : ""
+          deletion.sample.map((p) => p.title).join(", ") || "none",
+          deletion.count > deletion.sample.length ? ", …" : ""
         ] })
       ] }),
       /* @__PURE__ */ jsxs(Prompt.Footer, { children: [

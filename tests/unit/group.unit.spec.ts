@@ -22,8 +22,9 @@ describe("buildProduct", () => {
     expect(issues.some((i) => /invalid image/.test(i.message))).toBe(true)
   })
   it("promotes attributes common to all variants to product level", () => {
-    expect(product!.attributes).toEqual({ Brand: "Dell" })
-    expect(product!.variants[1].attributes).toEqual({ "Memory (RAM)": "16 GB" })
+    expect(product!.attributes).toEqual({ Brand: "Dell", "Memory (RAM)": "8 GB" })
+    expect(product!.variants[0].attributes).toEqual({})
+    expect(product!.variants[1].attributes).toEqual({})
   })
   it("rejects duplicate SKUs, duplicate combinations and missing option values", () => {
     const bad = buildProduct("k", [
