@@ -111,6 +111,7 @@ export default function ImportDetail() {
   );
   const retry = useMutation(act("retry", "Failed batches re-queued"));
   const cont = useMutation(act("continue", "Job resumed from last checkpoint"));
+  const stop = useMutation(act("stop", "Stopping after the current batch…"));
   const freshBody = (token: string) =>
     JSON.stringify({
       mode: "fresh",
@@ -238,6 +239,17 @@ export default function ImportDetail() {
                 Retry failed batches
               </Button>
             )}
+            {job.stage === "importing" &&
+              (job.status === "processing" || job.status === "pending") &&
+              !job.interrupted && (
+                <Button
+                  variant="danger"
+                  isLoading={stop.isPending}
+                  onClick={() => stop.mutate()}
+                >
+                  Stop import
+                </Button>
+              )}
             {canContinue && job.stage !== "uploaded" && (
               <Button isLoading={cont.isPending} onClick={() => cont.mutate()}>
                 Continue job

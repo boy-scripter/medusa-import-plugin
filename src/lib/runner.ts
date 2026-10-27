@@ -20,6 +20,7 @@ export async function runImportJob(container: MedusaContainer, jobId: string) {
   running.add(jobId)
   try {
     const job = await svc.retrieveImportJob(jobId)
+    if (job.status === "paused") return // stopped before it started
     if (job.status === "processing" && !isStale(job)) return // another worker is alive
     await svc.updateImportJobs({ id: jobId, stage: "importing", status: "processing", last_error: null, heartbeat_at: new Date() })
 
@@ -40,6 +41,10 @@ export async function runImportJob(container: MedusaContainer, jobId: string) {
     }
 
     while (true) {
+      const cur = await svc.retrieveImportJob(jobId)
+      if (cur.status === "paused") return // user pressed Stop; finally{} releases the guard
+      if (cur.status === "pending") await svc.updateImportJobs({ id: jobId, status: "processing", heartbeat_at: new Date() }) // Continue clicked while the last batch was still finishing
+
       const [batch] = await svc.listImportBatches({ job_id: jobId, status: ["pending", "processing"] }, { order: { idx: "ASC" }, take: 1 })
       if (!batch) break
       const { errors } = await importProductBatchWorkflow(container).run({
@@ -54,6 +59,7 @@ export async function runImportJob(container: MedusaContainer, jobId: string) {
         await svc.updateImportJobs({ id: jobId, failed_products: bad.reduce((a, b) => a + b.failed_count, 0), heartbeat_at: new Date() })
       }
     }
+    if ((await svc.retrieveImportJob(jobId)).status === "paused") return
     const [, failed] = await svc.listAndCountImportBatches({ job_id: jobId, status: "failed" }, { take: 1 })
     await svc.updateImportJobs({
       id: jobId, stage: failed ? "importing" : "completed", status: failed ? "completed_with_errors" : "completed", heartbeat_at: new Date(),

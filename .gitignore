@@ -1,4 +1,4 @@
 node_modules
-.medusa/*
+.medusa/**/*
 .medusa
 .npmrc
