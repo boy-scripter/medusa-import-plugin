@@ -12,8 +12,10 @@ export const bucketOf = (key: string, buckets: number) =>
   crypto.createHash("md5").update(key).digest().readUInt32BE(0) % buckets
 
 export function parseMoney(raw?: string): { value: number | null; valid: boolean } {
-  const s = clean(raw).replace(/[^\d.,-]/g, "")
-  if (!s) return { value: null, valid: true }
+  const input = clean(raw)
+  if (!input) return { value: null, valid: true } // empty cell = no price, allowed
+  const s = input.replace(/[^\d.,-]/g, "")
+  if (!s) return { value: null, valid: false } // non-empty but no digits at all = garbage
   let t = s
   if (t.includes(",") && t.includes(".")) {
     // the last separator is the decimal mark
