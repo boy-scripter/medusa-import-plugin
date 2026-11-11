@@ -2,7 +2,24 @@
 
 Resilient CSV product import for **Medusa v2**: native Admin UI, CSV -> normalized JSON preprocessing, batches of 10 products, DB-backed checkpoints, built-in workflow retries/compensation, and an admin **Continue job** button.
 
-> **Verify against your Medusa version.** This plugin targets Medusa `^2.8`. It was written against the documented v2 APIs but not executed against a live install. Before production, run the tests, run one 20-product import on staging, and check the "Version-sensitive spots" section below.
+## Supported Medusa versions
+
+The Medusa admin switched from React Router 6 to React Router 7 in **Medusa `2.19.0`**, so the plugin must use the same router as the dashboard — otherwise the admin throws `useNavigate() may be used only in the context of a <Router> component`.
+
+| Plugin version | Medusa | React Router |
+|---|---|---|
+| `1.0.4` and newer | `2.19.x` (peer `^2.19.0`) | 7 (`react-router-dom ^7.0.0`) |
+| `1.0.3` and older | `2.8.x` – `2.18.x`, e.g. `2.14.x` | 6 (`react-router-dom ^6.8.2`) |
+
+Pick the plugin version that matches your Medusa line. After installing, make sure a single `react-router-dom` resolves for the dashboard, your app and the plugin:
+
+```bash
+npm ls react-router-dom   # every entry should be "deduped" to one copy
+```
+
+If your app pins its own `react-router-dom` (in `package.json`), set it to the exact version `@medusajs/dashboard` uses, or npm will keep two copies and the `<Router>` error comes back.
+
+> **Verify before production.** This plugin targets the documented Medusa v2 APIs. Run the tests, run one 20-product import on staging, and check the "Version-sensitive spots" section below.
 
 ## Install
 
